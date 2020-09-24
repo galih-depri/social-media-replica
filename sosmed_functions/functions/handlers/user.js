@@ -4,7 +4,11 @@ const { firebaseConfig } = require("../config/firebaseConfig");
 const firebase = require("firebase");
 firebase.initializeApp(firebaseConfig);
 const shortUuid = require("short-uuid");
-const { validateSignUp, validateLogin } = require("../util/validator");
+const {
+  validateSignUp,
+  validateLogin,
+  reduceUserDetails,
+} = require("../util/validator");
 
 module.exports = {
   signup: (req, res) => {
@@ -151,5 +155,47 @@ module.exports = {
     });
 
     busboy.end(req.rawBody);
+  },
+
+  // Add user details
+  addUserDetails: (req, res) => {
+    let userDetails = reduceUserDetails(req.body);
+
+    db.doc(`/users/${req.user.handle}`)
+      .update(userDetails)
+      .then(() => {
+        return res.status(201).json("User details updated successfully!");
+      })
+      .catch((err) => {
+        console.error(err);
+        return res.status(500).json({ code: err.code, error: err.message });
+      });
+  },
+
+  getAuthenticatedUser: (req, res) => {
+    let userData = {};
+
+    db.doc(`/users/${req.user.handle}`)
+      .get()
+      .then((doc) => {
+        if (doc.exists) {
+          userData.credentials = doc.data();
+          return db
+            .collection("likes")
+            .where("userHandle", "==", req.user.handle)
+            .get();
+        }
+      })
+      .then((data) => {
+        userData.likes = [];
+        data.forEach((doc) => {
+          userData.likes.push(doc.data());
+        });
+        return res.status(200).json(userData);
+      })
+      .catch((err) => {
+        console.error(err);
+        return res.status(500).json({ code: err.code, error: err.message });
+      });
   },
 };
