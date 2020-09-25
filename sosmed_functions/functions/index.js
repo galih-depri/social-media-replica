@@ -10,10 +10,11 @@ const fbAuth = require("./middlewares/fbAuth");
 // Post routes
 app.post("/post", fbAuth, post.createPost);
 app.get("/posts", post.getAllPosts);
-app.get("/posts/:postId", post.getPost);
-app.post("/posts/:postId/comment", fbAuth, post.commentOnPost);
-app.get("/posts/:postId/likes", fbAuth, post.likePost);
-app.get("/posts/:postId/unlikes", fbAuth, post.unlikePost);
+app.get("/post/:postId", post.getPost);
+app.post("/post/:postId/comment", fbAuth, post.commentOnPost);
+app.get("/post/:postId/likes", fbAuth, post.likePost);
+app.get("/post/:postId/unlikes", fbAuth, post.unlikePost);
+app.delete("/post/:postId", fbAuth, post.deletePost);
 
 // User routes
 app.post("/signup", user.signup);

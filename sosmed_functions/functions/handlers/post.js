@@ -60,6 +60,7 @@ module.exports = {
       });
   },
 
+  // Get a post by ID
   getPost: (req, res) => {
     let postData = {};
     db.doc(`/posts/${req.params.postId}`)
@@ -89,6 +90,32 @@ module.exports = {
       });
   },
 
+  // Delete a post by ID
+  deletePost: (req, res) => {
+    const document = db.doc(`/posts/${req.params.postId}`);
+
+    document
+      .get()
+      .then((doc) => {
+        if (!doc.exists) {
+          return res.status(404).json({ error: "Post not found!" });
+        }
+        if (doc.data().userHandle !== req.user.handle) {
+          res.status(403).json({ error: "Unauthorized!" });
+        } else {
+          return document.delete();
+        }
+      })
+      .then(() => {
+        res.status(200).json({ message: "Post has successfully been deleted" });
+      })
+      .catch((err) => {
+        console.error(err);
+        return res.status(500).json({ code: err.code, error: err.message });
+      });
+  },
+
+  // Write a comment on a post
   commentOnPost: (req, res) => {
     if (req.body.body.trim() === "")
       return res.status(400).json({ error: "Must not be empty" });
@@ -107,6 +134,9 @@ module.exports = {
         if (!doc.exists) {
           return res.status(404).json({ error: "Post is no longer available" });
         }
+        return doc.ref.update({ commentCount: doc.data().commentCount + 1 });
+      })
+      .then(() => {
         return db.collection("comments").add(newComment);
       })
       .then(() => {
@@ -118,6 +148,7 @@ module.exports = {
       });
   },
 
+  // Like a post
   likePost: (req, res) => {
     const likeDocument = db
       .collection("likes")
@@ -165,6 +196,7 @@ module.exports = {
       });
   },
 
+  // Unlike a post
   unlikePost: (req, res) => {
     const likeDocument = db
       .collection("likes")
