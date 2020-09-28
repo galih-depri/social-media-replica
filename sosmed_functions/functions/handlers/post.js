@@ -46,6 +46,9 @@ module.exports = {
             body: doc.data().body,
             userHandle: doc.data().userHandle,
             createdAt: doc.data().createdAt,
+            commentCount: doc.data().commentCount,
+            likeCount: doc.data().likeCount,
+            userImage: doc.data().userImage,
           });
         });
         return res
@@ -101,13 +104,13 @@ module.exports = {
           return res.status(404).json({ error: "Post not found!" });
         }
         if (doc.data().userHandle !== req.user.handle) {
-          res.status(403).json({ error: "Unauthorized!" });
+          return res.status(403).json({ error: "Unauthorized!" });
         } else {
           return document.delete();
         }
       })
       .then(() => {
-        res.status(200).json({ message: "Post has successfully been deleted" });
+        res.status(201).json({ message: "Post has successfully been deleted" });
       })
       .catch((err) => {
         console.error(err);
